@@ -110,7 +110,7 @@ $reports = $stmt->fetchAll();
 <table border="1" cellpadding="5">
     <tr>
         <th>Type</th><th>Title</th><th>Category</th><th>Location</th>
-        <th>Date</th><th>Reporter</th><th>Status</th><th>Actions</th>
+        <th>Date</th><th>Description</th><th>Reporter</th><th>Status</th><th>Actions</th>
     </tr>
     <?php foreach ($reports as $r): ?>
     <tr>
@@ -119,19 +119,18 @@ $reports = $stmt->fetchAll();
         <td><?php echo htmlspecialchars($r["category"]); ?></td>
         <td><?php echo htmlspecialchars($r["location"]); ?></td>
         <td><?php echo htmlspecialchars($r["date_occurred"]); ?></td>
+        <td><?php echo htmlspecialchars($r["description"]); ?></td>
         <td><?php echo htmlspecialchars($r["reporter_name"]); ?></td>
         <td id="status-<?php echo $r['id']; ?>"><?php echo htmlspecialchars($r["status"]); ?></td>
         <td>
-            <?php if ($r["status"] === "Open"): ?>
+            <?php if ($r["status"] !== "Resolved"): ?>
                 <button class="claim-btn" data-id="<?php echo $r['id']; ?>">Claim</button>
             <?php endif; ?>
-            <?php if ($r["status"] !== "Resolved"): ?>
-                <select class="status-change" data-id="<?php echo $r['id']; ?>">
-                    <option value="">Change status</option>
-                    <option value="Open">Open</option>
-                    <option value="Claim Requested">Claim Requested</option>
-                    <option value="Resolved">Resolved</option>
-                </select>
+            <?php if ($r["status"] === "Claim Requested"): ?>
+                <button class="resolve-btn" data-id="<?php echo $r['id']; ?>">Resolve</button>
+            <?php endif; ?>
+            <?php if ($r["status"] === "Resolved"): ?>
+                -
             <?php endif; ?>
         </td>
     </tr>
@@ -173,13 +172,17 @@ $("#claim-form").submit(function(e){
     });
 });
 
-// Status update via AJAX (no full page reload)
-$(".status-change").change(function(){
+// Resolve via AJAX (no full page reload)
+$(".resolve-btn").click(function(){
     var id = $(this).data("id");
-    var newStatus = $(this).val();
-    if (!newStatus) return;
-    $.post("status.php", {id: id, status: newStatus}, function(resp){
-        $("#status-" + id).text(newStatus);
+    var btn = $(this);
+    var email = prompt("Only the reporter can resolve this report. Please enter the reporter's email:");
+    if (!email) return;
+    $.post("status.php", {id: id, status: "Resolved", email: email}, function(resp){
+        if (resp.indexOf("updated") !== -1) {
+            $("#status-" + id).text("Resolved");
+            btn.replaceWith("-");
+        }
         alert(resp);
     });
 });

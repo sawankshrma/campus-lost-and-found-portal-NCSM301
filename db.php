@@ -1,6 +1,6 @@
 <?php
 $pdo = new PDO(
-    "mysql:host=localhost;dbname=lost_and_found;charset=utf8mb4",
+    "mysql:host=127.0.0.1;dbname=lost_and_found;charset=utf8mb4",
     "lnf_user",
     "lnf_pass123",
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
