@@ -46,42 +46,47 @@ $reports = $stmt->fetchAll();
 <body>
 
 <h1>Campus Lost &amp; Found Portal</h1>
+<p class="page-tagline">Find lost items, report found belongings, and help return them to their owners.</p>
 
 <!-- Search / Filter -->
 <form method="get" action="index.php">
-    <input type="text" name="search" placeholder="Search..."
-           value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
-    <select name="type">
-        <option value="">All Types</option>
-        <option value="lost" <?php if(($_GET['type']??'')==='lost') echo 'selected';?>>Lost</option>
-        <option value="found" <?php if(($_GET['type']??'')==='found') echo 'selected';?>>Found</option>
-    </select>
-    <select name="category">
-        <option value="">All Categories</option>
-        <?php
-        $cats = ["Electronics","Documents & ID","Bags & Luggage","Books & Notes","Accessories","Personal Items","Keys","Clothing","Other"];
-        foreach ($cats as $c):
-        ?>
-            <option value="<?php echo htmlspecialchars($c); ?>"
-                <?php if(($_GET['category']??'')===$c) echo 'selected';?>>
-                <?php echo htmlspecialchars($c); ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-    <select name="status">
-        <option value="">All Status</option>
-        <option value="Open" <?php if(($_GET['status']??'')==='Open') echo 'selected';?>>Open</option>
-        <option value="Claim Requested" <?php if(($_GET['status']??'')==='Claim Requested') echo 'selected';?>>Claim Requested</option>
-        <option value="Resolved" <?php if(($_GET['status']??'')==='Resolved') echo 'selected';?>>Resolved</option>
-    </select>
-    <button type="submit">Search</button>
-    <a href="index.php">Clear</a>
+    <h2>Search Reports</h2>
+    <p class="search-help">Search by keyword or narrow the results using the filters below.</p>
+    <div class="search-controls">
+        <input type="text" name="search" placeholder="Search title, description, or location..."
+               value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+        <select name="type">
+            <option value="">All Types</option>
+            <option value="lost" <?php if(($_GET['type']??'')==='lost') echo 'selected';?>>Lost</option>
+            <option value="found" <?php if(($_GET['type']??'')==='found') echo 'selected';?>>Found</option>
+        </select>
+        <select name="category">
+            <option value="">All Categories</option>
+            <?php
+            $cats = ["Electronics","Documents & ID","Bags & Luggage","Books & Notes","Accessories","Personal Items","Keys","Clothing","Other"];
+            foreach ($cats as $c):
+            ?>
+                <option value="<?php echo htmlspecialchars($c); ?>"
+                    <?php if(($_GET['category']??'')===$c) echo 'selected';?>>
+                    <?php echo htmlspecialchars($c); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <select name="status">
+            <option value="">All Status</option>
+            <option value="Open" <?php if(($_GET['status']??'')==='Open') echo 'selected';?>>Open</option>
+            <option value="Claim Requested" <?php if(($_GET['status']??'')==='Claim Requested') echo 'selected';?>>Claim Requested</option>
+            <option value="Resolved" <?php if(($_GET['status']??'')==='Resolved') echo 'selected';?>>Resolved</option>
+        </select>
+        <button type="submit">Search</button>
+        <a href="index.php">Clear</a>
+    </div>
 </form>
 
 <hr>
 
 <!-- New Report Form -->
-<h2>Submit a Report</h2>
+<h2>Submit a new Report</h2>
 <form action="add.php" method="post">
     <select name="type" required>
         <option value="">-- Lost or Found? --</option>
@@ -106,7 +111,7 @@ $reports = $stmt->fetchAll();
 <hr>
 
 <!-- Reports List -->
-<h2>Reports (<?php echo count($reports); ?>)</h2>
+<h2>Recent Reports (<?php echo count($reports); ?>)</h2>
 <table border="1" cellpadding="5">
     <tr>
         <th>Type</th><th>Title</th><th>Category</th><th>Location</th>
