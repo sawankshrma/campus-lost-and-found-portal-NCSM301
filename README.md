@@ -38,7 +38,10 @@ The portal provides four main capabilities:
    - A person who believes an item belongs to them can submit their name, email, and an explanation.
    - The report changes from `Open` to `Claim Requested`.
 
-4. **Resolve a report**
+4. **View claims**
+   - View all claims submitted for a report in a modal window without leaving the page.
+
+5. **Resolve a report**
    - The original reporter can click `Resolve` after a claim has been submitted.
    - They must enter the email address used when creating the report.
    - The status changes to `Resolved` without reloading the whole page.
@@ -111,6 +114,7 @@ A production application should use an account system, a one-time email link, or
 .
 ├── add.php        Handles new report submissions
 ├── claim.php      Handles claim submissions
+├── claims.php     Returns a report's claims as JSON for the claims modal
 ├── database.sql   Creates the database tables and inserts sample data
 ├── db.php         Creates the PDO database connection
 ├── index.php      Main page, forms, report list, search, filters, and AJAX code
@@ -137,6 +141,10 @@ Reads the report form fields, checks that they are not empty, and inserts the re
 ### `claim.php`
 
 Reads the claim form fields, inserts a new claim, and changes an `Open` report to `Claim Requested`.
+
+### `claims.php`
+
+Returns all claims for a selected report as JSON. The JavaScript in `index.php` requests this data when the user clicks **View Claims**, then displays it in a modal window.
 
 ### `status.php`
 
@@ -246,7 +254,7 @@ When asked for the password, enter:
 lnf_pass123
 ```
 
-The SQL file creates the tables and inserts sample reports. If you run this command more than once, the sample `INSERT` statements may create duplicate sample rows.
+The SQL file creates the tables and inserts sample reports and claims. If you run this command more than once, the sample `INSERT` statements may create duplicate sample rows.
 
 You can confirm that the tables exist:
 
@@ -392,7 +400,7 @@ In phpMyAdmin:
 
 After a successful import, click the database name in the left sidebar. You should see the `reports` and `claims` tables.
 
-The SQL file also inserts sample reports. Importing it repeatedly may create duplicate sample reports.
+The SQL file also inserts sample reports and claims. Importing it repeatedly may create duplicate sample data.
 
 ### 6. Check the database connection settings
 
@@ -540,6 +548,10 @@ The email is important because it is used later to confirm resolution.
 4. Click **Submit Claim**.
 
 The claim is submitted in the background. The page then reloads so that the updated report status is visible.
+
+### View claims
+
+Click **View Claims** below a report's status to see every claim submitted for that report. The claims are loaded in the background and displayed in a modal. If no one has claimed the item, the modal displays a message saying that no claims have been submitted yet.
 
 ### Resolve a report
 

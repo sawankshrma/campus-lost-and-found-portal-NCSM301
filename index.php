@@ -25,7 +25,9 @@ if (isset($_GET["status"]) && $_GET["status"] !== "") {
     $params[":status"] = $_GET["status"];
 }
 
-$sql = "SELECT * FROM reports";
+$sql = "SELECT reports.*,
+               (SELECT COUNT(*) FROM claims WHERE claims.report_id = reports.id) AS claim_count
+        FROM reports";
 if ($where) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
@@ -34,6 +36,7 @@ $sql .= " ORDER BY created_at DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $reports = $stmt->fetchAll();
+$cats = ["Electronics", "Documents & ID", "Bags & Luggage", "Books & Notes", "Accessories", "Personal Items", "Keys", "Clothing", "Other"];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,43 +50,6 @@ $reports = $stmt->fetchAll();
 
 <h1>Campus Lost &amp; Found Portal</h1>
 <p class="page-tagline">Find lost items, report found belongings, and help return them to their owners.</p>
-
-<!-- Search / Filter -->
-<form method="get" action="index.php">
-    <h2>Search Reports</h2>
-    <p class="search-help">Search by keyword or narrow the results using the filters below.</p>
-    <div class="search-controls">
-        <input type="text" name="search" placeholder="Search title, description, or location..."
-               value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
-        <select name="type">
-            <option value="">All Types</option>
-            <option value="lost" <?php if(($_GET['type']??'')==='lost') echo 'selected';?>>Lost</option>
-            <option value="found" <?php if(($_GET['type']??'')==='found') echo 'selected';?>>Found</option>
-        </select>
-        <select name="category">
-            <option value="">All Categories</option>
-            <?php
-            $cats = ["Electronics","Documents & ID","Bags & Luggage","Books & Notes","Accessories","Personal Items","Keys","Clothing","Other"];
-            foreach ($cats as $c):
-            ?>
-                <option value="<?php echo htmlspecialchars($c); ?>"
-                    <?php if(($_GET['category']??'')===$c) echo 'selected';?>>
-                    <?php echo htmlspecialchars($c); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-        <select name="status">
-            <option value="">All Status</option>
-            <option value="Open" <?php if(($_GET['status']??'')==='Open') echo 'selected';?>>Open</option>
-            <option value="Claim Requested" <?php if(($_GET['status']??'')==='Claim Requested') echo 'selected';?>>Claim Requested</option>
-            <option value="Resolved" <?php if(($_GET['status']??'')==='Resolved') echo 'selected';?>>Resolved</option>
-        </select>
-        <button type="submit">Search</button>
-        <a href="index.php">Clear</a>
-    </div>
-</form>
-
-<hr>
 
 <!-- New Report Form -->
 <h2>Submit a new Report</h2>
@@ -112,6 +78,40 @@ $reports = $stmt->fetchAll();
 
 <!-- Reports List -->
 <h2>Recent Reports (<?php echo count($reports); ?>)</h2>
+<!-- Search / Filter -->
+<form method="get" action="index.php">
+    <h2>Search Reports</h2>
+    <p class="search-help">Search by keyword or narrow the results using the filters below.</p>
+    <div class="search-controls">
+        <input type="text" name="search" placeholder="Search title, description, or location..."
+               value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+        <select name="type">
+            <option value="">All Types</option>
+            <option value="lost" <?php if(($_GET['type']??'')==='lost') echo 'selected';?>>Lost</option>
+            <option value="found" <?php if(($_GET['type']??'')==='found') echo 'selected';?>>Found</option>
+        </select>
+        <select name="category">
+            <option value="">All Categories</option>
+            <?php
+            foreach ($cats as $c):
+            ?>
+                <option value="<?php echo htmlspecialchars($c); ?>"
+                    <?php if(($_GET['category']??'')===$c) echo 'selected';?>>
+                    <?php echo htmlspecialchars($c); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <select name="status">
+            <option value="">All Status</option>
+            <option value="Open" <?php if(($_GET['status']??'')==='Open') echo 'selected';?>>Open</option>
+            <option value="Claim Requested" <?php if(($_GET['status']??'')==='Claim Requested') echo 'selected';?>>Claim Requested</option>
+            <option value="Resolved" <?php if(($_GET['status']??'')==='Resolved') echo 'selected';?>>Resolved</option>
+        </select>
+        <button type="submit">Search</button>
+        <a href="index.php">Clear</a>
+    </div>
+</form>
+
 <table border="1" cellpadding="5">
     <tr>
         <th>Type</th><th>Title</th><th>Category</th><th>Location</th>
@@ -119,14 +119,27 @@ $reports = $stmt->fetchAll();
     </tr>
     <?php foreach ($reports as $r): ?>
     <tr>
-        <td><?php echo htmlspecialchars($r["type"]); ?></td>
+        <td class="item-type">
+            <span class="type-marker" title="<?php echo $r["type"] === "lost" ? "Lost item" : "Found item"; ?>" aria-label="<?php echo $r["type"] === "lost" ? "Lost item" : "Found item"; ?>">
+                <?php echo $r["type"] === "lost" ? "🔴" : "🟢"; ?>
+            </span>
+            <?php echo htmlspecialchars($r["type"]); ?>
+        </td>
         <td><?php echo htmlspecialchars($r["title"]); ?></td>
         <td><?php echo htmlspecialchars($r["category"]); ?></td>
         <td><?php echo htmlspecialchars($r["location"]); ?></td>
         <td><?php echo htmlspecialchars($r["date_occurred"]); ?></td>
         <td><?php echo htmlspecialchars($r["description"]); ?></td>
         <td><?php echo htmlspecialchars($r["reporter_name"]); ?></td>
-        <td id="status-<?php echo $r['id']; ?>"><?php echo htmlspecialchars($r["status"]); ?></td>
+        <td id="status-<?php echo $r['id']; ?>" class="status-cell">
+            <span class="status-text"><?php echo htmlspecialchars($r["status"]); ?></span>
+            <?php if ((int) $r["claim_count"] > 0): ?>
+                <button class="view-claims-btn" data-id="<?php echo $r['id']; ?>"
+                        data-title="<?php echo htmlspecialchars($r["title"], ENT_QUOTES, 'UTF-8'); ?>">
+                    View Claims
+                </button>
+            <?php endif; ?>
+        </td>
         <td>
             <?php if ($r["status"] !== "Resolved"): ?>
                 <button class="claim-btn" data-id="<?php echo $r['id']; ?>">Claim</button>
@@ -157,6 +170,17 @@ $reports = $stmt->fetchAll();
     </div>
 </div>
 
+<!-- Claims Modal (hidden) -->
+<div id="claims-modal" style="display:none; background:rgba(0,0,0,0.5); position:fixed; top:0; left:0; width:100%; height:100%;">
+    <div style="background:#fff; margin:10% auto; padding:20px; width:520px;">
+        <h3 id="claims-modal-title">Claims</h3>
+        <div id="claims-content">
+            <p>Loading claims...</p>
+        </div>
+        <button type="button" id="claims-close">Close</button>
+    </div>
+</div>
+
 <script>
 // Claim modal
 $(".claim-btn").click(function(){
@@ -177,6 +201,48 @@ $("#claim-form").submit(function(e){
     });
 });
 
+// View claims via AJAX
+$(".view-claims-btn").click(function(){
+    var id = $(this).data("id");
+    var title = $(this).data("title");
+
+    $("#claims-modal-title").text("Claims for " + title);
+    $("#claims-content").html("<p>Loading claims...</p>");
+    $("#claims-modal").show();
+
+    $.getJSON("claims.php", {report_id: id})
+        .done(function(data){
+            if (!data.success || data.claims.length === 0) {
+                $("#claims-content").html("<p class='no-claims'>No claims have been submitted for this report yet.</p>");
+                return;
+            }
+
+            var cards = $("<div>");
+            $.each(data.claims, function(_, claim){
+                var card = $("<article class='claim-card'>");
+                $("<h4>").text(claim.claimer_name).appendTo(card);
+                $("<p>").append($("<strong>").text("Email: "), $("<span>").text(claim.claimer_email)).appendTo(card);
+                $("<p>").append($("<strong>").text("Message: "), $("<span>").text(claim.message)).appendTo(card);
+                $("<small>").text("Submitted: " + claim.created_at).appendTo(card);
+                card.appendTo(cards);
+            });
+            $("#claims-content").empty().append(cards);
+        })
+        .fail(function(){
+            $("#claims-content").html("<p class='claims-error'>Could not load claims. Please try again.</p>");
+        });
+});
+
+$("#claims-close").click(function(){
+    $("#claims-modal").hide();
+});
+
+$("#claims-modal").click(function(e){
+    if (e.target === this) {
+        $(this).hide();
+    }
+});
+
 // Resolve via AJAX (no full page reload)
 $(".resolve-btn").click(function(){
     var id = $(this).data("id");
@@ -185,7 +251,7 @@ $(".resolve-btn").click(function(){
     if (!email) return;
     $.post("status.php", {id: id, status: "Resolved", email: email}, function(resp){
         if (resp.indexOf("updated") !== -1) {
-            $("#status-" + id).text("Resolved");
+            $("#status-" + id + " .status-text").text("Resolved");
             btn.replaceWith("-");
         }
         alert(resp);

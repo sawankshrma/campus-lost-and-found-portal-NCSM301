@@ -1,6 +1,6 @@
 :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
+    --primary: #126464;
+    --primary-dark: #186d82;
     --text: #1f2937;
     --muted: #6b7280;
     --border: #dbe2ea;
@@ -223,10 +223,42 @@ td[id^="status-"] {
     white-space: nowrap;
 }
 
+.item-type {
+    white-space: nowrap;
+}
+
+.type-marker {
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 1rem;
+}
+
+.status-cell {
+    min-width: 145px;
+}
+
+.status-text {
+    display: block;
+}
+
 td button {
     margin: 2px 3px 2px 0;
     padding: 6px 10px;
     font-size: 0.9rem;
+}
+
+.view-claims-btn {
+    display: block;
+    margin-top: 8px;
+    color: var(--primary-dark);
+    background: #eef4ff;
+    border-color: #bfd3f7;
+    font-size: 0.82rem;
+}
+
+.view-claims-btn:hover {
+    background: #dce9ff;
+    border-color: #9dbcf0;
 }
 
 /* Claim modal */
@@ -259,6 +291,57 @@ td button {
 
 #claim-form button + button:hover {
     background: #e2e8f0;
+}
+
+/* Claims modal */
+#claims-modal > div {
+    width: min(520px, calc(100% - 32px)) !important;
+    max-height: 80vh;
+    margin: 10vh auto !important;
+    overflow-y: auto;
+    border-radius: 10px;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.22);
+}
+
+#claims-modal-title {
+    margin-top: 0;
+}
+
+.claim-card {
+    margin: 10px 0;
+    padding: 12px;
+    background: #f8fbff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.claim-card h4 {
+    margin: 0 0 6px;
+    color: #23456f;
+}
+
+.claim-card p {
+    margin: 5px 0;
+    overflow-wrap: anywhere;
+}
+
+.claim-card small {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+}
+
+.no-claims,
+.claims-error {
+    padding: 12px;
+    color: var(--muted);
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+.claims-error {
+    color: #b42318;
+    background: #fff4f2;
 }
 
 @media (max-width: 700px) {

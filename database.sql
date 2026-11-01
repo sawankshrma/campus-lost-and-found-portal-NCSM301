@@ -37,3 +37,30 @@ INSERT INTO reports (type, title, category, location, date_occurred, description
 ('found', 'Wireless Earbuds Case', 'Electronics', 'Cafeteria - Main Hall', '2026-10-29', 'White Samsung Galaxy Buds case found near the billing counter. Contains earbuds inside.', 'Sneha Iyer', 'sneha.i@campus.edu', 'Open'),
 ('lost', 'Organic Chemistry Textbook', 'Books & Notes', 'Lecture Hall - LH3', '2026-10-26', 'Morrison & Boyd Organic Chemistry textbook with highlighted chapters 5-8. Name written on first page.', 'Karan Singh', 'karan.s@campus.edu', 'Resolved'),
 ('found', 'Water Bottle - Green', 'Personal Items', 'Parking Lot - Block A', '2026-10-30', 'Green Milton water bottle found near bike parking. Has stickers on it.', 'Ananya Roy', 'ananya.r@campus.edu', 'Open');
+
+-- Sample claims
+-- The report is looked up by title so this also works if the sample reports
+-- receive different auto-increment IDs in an existing database.
+INSERT INTO claims (report_id, claimer_name, claimer_email, message)
+SELECT id, 'Aditi Kapoor', 'aditi.k@campus.edu',
+       'The watch has a small scratch near the number 12 and was a birthday gift from my parents.'
+FROM reports
+WHERE title = 'Silver Wristwatch'
+ORDER BY id DESC
+LIMIT 1;
+
+INSERT INTO claims (report_id, claimer_name, claimer_email, message)
+SELECT id, 'Rohan Malhotra', 'rohan.m@campus.edu',
+       'I lost this watch after my evening workout. The black strap and silver dial match the description.'
+FROM reports
+WHERE title = 'Silver Wristwatch'
+ORDER BY id DESC
+LIMIT 1;
+
+INSERT INTO claims (report_id, claimer_name, claimer_email, message)
+SELECT id, 'Meera Nair', 'meera.n@campus.edu',
+       'This is my Organic Chemistry textbook. My name is written on the first page and I highlighted chapters 5 to 8.'
+FROM reports
+WHERE title = 'Organic Chemistry Textbook'
+ORDER BY id DESC
+LIMIT 1;
